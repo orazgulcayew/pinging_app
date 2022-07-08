@@ -13,4 +13,16 @@ class SstpDataRepository {
         .map<SstpDataModel>((e) => SstpDataModel.fromMap(e))
         .toList();
   }
+
+  Future<List<SstpDataModel>> getSstpList2() async {
+    final String rawSstpList = await SstpDataApi().getAllHosts2();
+
+    List<String> list = rawSstpList.split('\n');
+    list.removeWhere((e) => e.trim().isEmpty);
+
+    return list.map<SstpDataModel>((e) {
+      var arr = e.split(':');
+      return SstpDataModel(ip: arr[0], port: int.parse(arr[1]));
+    }).toList();
+  }
 }

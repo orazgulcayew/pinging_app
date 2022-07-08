@@ -7,4 +7,11 @@ class SstpDataApi {
 
     return response.body;
   }
+
+  Future<String> getAllHosts2() async {
+    var response = await http
+        .get(Uri.parse("https://duralga-next-vercel.vercel.app/api/key_req_2"));
+
+    return response.body;
+  }
 }

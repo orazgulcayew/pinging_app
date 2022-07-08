@@ -16,7 +16,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
   void init() async {
     try {
-      var list = await SstpDataRepository().getSstpList();
+      var list = await SstpDataRepository().getSstpList2();
       emit(AddressManagerState(addresses: list));
     } catch (_) {
       // nothing

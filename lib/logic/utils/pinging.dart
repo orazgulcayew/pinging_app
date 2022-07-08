@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-
 class Pinging {
   final Duration timeout;
   final int maxPings;
