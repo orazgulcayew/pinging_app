@@ -4,10 +4,12 @@ part of 'address_manager_cubit.dart';
 class AddressManagerState extends Equatable {
   final List<SstpDataModel> addresses;
   final List<SstpDataModel> history;
+  final double pingingProgress;
 
   const AddressManagerState({
     required this.addresses,
     this.history = const [],
+    this.pingingProgress = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,15 +34,17 @@ class AddressManagerState extends Equatable {
       AddressManagerState.fromMap(json.decode(source));
 
   @override
-  List<Object> get props => [addresses];
+  List<Object> get props => [addresses, pingingProgress];
 
   AddressManagerState copyWith({
     List<SstpDataModel>? addresses,
     List<SstpDataModel>? history,
+    double? pingingProgress,
   }) {
     return AddressManagerState(
       addresses: addresses ?? this.addresses,
       history: history ?? this.history,
+      pingingProgress: pingingProgress ?? this.pingingProgress,
     );
   }
 }

@@ -28,11 +28,15 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
     pinging
         .bulkPing(
-          addresses:
-              state.addresses.map((e) => PingingAddress(e.ip, e.port)).toList(),
-          onProgress: (int all, int done, int pinging, int success) => debugPrint(
-              "all: $all   done: $done   pinging: $pinging   success: $success"),
-        )
+            addresses: state.addresses
+                .map((e) => PingingAddress(e.ip, e.port))
+                .toList(),
+            onProgress: (int all, int done, int pinging, int success) {
+              emit(state.copyWith(pingingProgress: (done + 0.1) / all));
+
+              debugPrint(
+                  "all: $all   done: $done   pinging: $pinging   success: $success");
+            })
         .then(
           (addresses) => emit(
             state.copyWith(

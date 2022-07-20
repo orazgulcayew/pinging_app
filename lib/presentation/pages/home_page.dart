@@ -47,7 +47,27 @@ class HomePage extends StatelessWidget {
           );
 
           return ListView(
-            children: iterable.toList(),
+            children: [
+              Container(
+                color: Colors.greenAccent,
+                padding: const EdgeInsets.all(8.0),
+                child: StreamBuilder<AddressManagerState>(
+                    stream: context.read<AddressManagerCubit>().stream,
+                    builder: (context, snapshot) {
+                      double value = 0;
+
+                      if (snapshot.hasData) {
+                        value = snapshot.data!.pingingProgress;
+                      }
+
+                      return LinearProgressIndicator(
+                        minHeight: 10,
+                        value: value,
+                      );
+                    }),
+              ),
+              ...iterable.toList(),
+            ],
           );
         }),
       ),
