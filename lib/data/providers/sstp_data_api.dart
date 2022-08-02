@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 class SstpDataApi {
@@ -13,5 +14,16 @@ class SstpDataApi {
         .get(Uri.parse("https://duralga-next-vercel.vercel.app/api/key_req_2"));
 
     return response.body;
+  }
+
+  Future<String> getAllHosts3({
+    void Function(int, int)? onReceiveProgress,
+  }) async {
+    var response = await Dio().get<String>(
+      "https://duralga-next-vercel.vercel.app/api/key_req_2",
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return response.data ?? "";
   }
 }

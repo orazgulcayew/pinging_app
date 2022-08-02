@@ -15,6 +15,7 @@ class AddressManagerState extends Equatable {
   Map<String, dynamic> toMap() {
     return {
       'addresses': addresses.map((e) => e.toMap()).toList(),
+      'history': history.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -25,6 +26,8 @@ class AddressManagerState extends Equatable {
       addresses: List.of(map['addresses'])
           .map((e) => SstpDataModel.fromMap(e))
           .toList(),
+      history:
+          List.of(map['history']).map((e) => SstpDataModel.fromMap(e)).toList(),
     );
   }
 

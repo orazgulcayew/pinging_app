@@ -16,7 +16,16 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
   void init() async {
     try {
-      var list = await SstpDataRepository().getSstpList2();
+      // var list = await SstpDataRepository().getSstpList2();
+      emit(state.copyWith(pingingProgress: 0.1));
+
+      var list = await SstpDataRepository().getSstpList3(
+        onReceiveProgress: ((done, total) {
+          debugPrint("$done - $total");
+          emit(state.copyWith(pingingProgress: (done + 0.1) / total));
+        }),
+      );
+
       emit(AddressManagerState(addresses: list));
     } catch (_) {
       // nothing
@@ -28,24 +37,26 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
     pinging
         .bulkPing(
-            addresses: state.addresses
-                .map((e) => PingingAddress(e.ip, e.port))
-                .toList(),
-            onProgress: (int all, int done, int pinging, int success) {
-              emit(state.copyWith(pingingProgress: (done + 0.1) / all));
-
-              debugPrint(
-                  "all: $all   done: $done   pinging: $pinging   success: $success");
-            })
+      addresses:
+          state.addresses.map((e) => PingingAddress(e.ip, e.port)).toList(),
+      onProgress: (int all, int done, int pinging, int success) {
+        emit(state.copyWith(pingingProgress: (done + 0.1) / all));
+      },
+    )
         .then(
-          (addresses) => emit(
-            state.copyWith(
-              addresses: addresses
-                  .map((e) => SstpDataModel(ip: e.ip, port: e.port))
-                  .toList(),
-            ),
-          ),
-        );
+      (addresses) {
+        List<SstpDataModel> data = addresses
+            .map((e) => SstpDataModel(ip: e.ip, port: e.port))
+            .toList();
+
+        var history = <SstpDataModel>{...state.history, ...data}.toList();
+
+        emit(state.copyWith(
+          addresses: data,
+          history: history,
+        ));
+      },
+    );
   }
 
   @override

@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Pinging',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,

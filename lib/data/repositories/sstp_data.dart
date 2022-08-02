@@ -25,4 +25,20 @@ class SstpDataRepository {
       return SstpDataModel(ip: arr[0], port: int.parse(arr[1]));
     }).toList();
   }
+
+  Future<List<SstpDataModel>> getSstpList3({
+    void Function(int, int)? onReceiveProgress,
+  }) async {
+    final String rawSstpList = await SstpDataApi().getAllHosts3(
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    List<String> list = rawSstpList.split('\n');
+    list.removeWhere((e) => e.trim().isEmpty);
+
+    return list.map<SstpDataModel>((e) {
+      var arr = e.split(':');
+      return SstpDataModel(ip: arr[0], port: int.parse(arr[1]));
+    }).toList();
+  }
 }
