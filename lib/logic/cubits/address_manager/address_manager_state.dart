@@ -8,7 +8,7 @@ class AddressManagerState extends Equatable {
 
   const AddressManagerState({
     required this.addresses,
-    this.history = const [],
+    required this.history,
     this.pingingProgress = 0,
   });
 
@@ -56,5 +56,6 @@ class AddressManagerInitial extends AddressManagerState {
   AddressManagerInitial()
       : super(
           addresses: [],
+          history: [],
         );
 }

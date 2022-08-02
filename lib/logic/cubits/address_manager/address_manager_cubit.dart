@@ -26,7 +26,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
         }),
       );
 
-      emit(AddressManagerState(addresses: list));
+      emit(state.copyWith(addresses: list));
     } catch (_) {
       // nothing
     }
