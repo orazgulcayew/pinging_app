@@ -32,16 +32,21 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
     }
   }
 
+  _onProgressPing(int all, int done, int pinging, int success) {
+    emit(state.copyWith(pingingProgress: (done + 0.1) / all));
+  }
+
   void ping() {
     Pinging pinging = Pinging(timeout: const Duration(seconds: 2));
 
+    final addresses = [...state.addresses, ...state.history]
+        .map<PingingAddress>((e) => PingingAddress(e.ip, e.port))
+        .toList();
+
     pinging
         .bulkPing(
-      addresses:
-          state.addresses.map((e) => PingingAddress(e.ip, e.port)).toList(),
-      onProgress: (int all, int done, int pinging, int success) {
-        emit(state.copyWith(pingingProgress: (done + 0.1) / all));
-      },
+      addresses: addresses,
+      onProgress: _onProgressPing,
     )
         .then(
       (addresses) {
