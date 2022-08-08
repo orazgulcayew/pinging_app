@@ -39,7 +39,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
   void ping() {
     Pinging pinging = Pinging(timeout: const Duration(seconds: 2));
 
-    final addresses = [...state.addresses, ...state.history]
+    final addresses = {...state.addresses, ...state.history}
         .map<PingingAddress>((e) => PingingAddress(e.ip, e.port))
         .toList();
 
