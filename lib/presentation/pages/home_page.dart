@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:pinging/data/models/sstp_data.dart';
 import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
+import 'package:pinging/presentation/pages/register_page.dart';
 
 class HomePage extends HookWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,6 +19,17 @@ class HomePage extends HookWidget {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.key_outlined),
+                tooltip: 'Auth key',
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => const RegisterPage(),
+                  ));
+                },
+              ),
+            ],
             bottom: const TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.onetwothree_sharp)),
@@ -46,8 +58,9 @@ class HomePage extends HookWidget {
                       Expanded(
                         child: IconButton(
                           icon: const Icon(Icons.download),
-                          onPressed: () =>
-                              context.read<AddressManagerCubit>().init(),
+                          onPressed: () {
+                            context.read<AddressManagerCubit>().load();
+                          },
                           color: Colors.blue,
                           tooltip: "Get all",
                         ),
@@ -59,8 +72,9 @@ class HomePage extends HookWidget {
                       Expanded(
                         child: IconButton(
                           icon: const Icon(Icons.upload),
-                          onPressed: () =>
-                              context.read<AddressManagerCubit>().ping(),
+                          onPressed: () {
+                            context.read<AddressManagerCubit>().ping();
+                          },
                           color: Colors.green,
                           tooltip: 'Ping all',
                         ),
@@ -70,21 +84,22 @@ class HomePage extends HookWidget {
                 ),
               ),
               StreamBuilder<AddressManagerState>(
-                  stream: context.read<AddressManagerCubit>().stream,
-                  builder: (context, snapshot) {
-                    double value = 0;
+                stream: context.read<AddressManagerCubit>().stream,
+                builder: (context, snapshot) {
+                  double value = 0;
 
-                    if (snapshot.hasData) {
-                      value = snapshot.data!.pingingProgress;
-                    }
+                  if (snapshot.hasData) {
+                    value = snapshot.data!.pingingProgress;
+                  }
 
-                    if (value == 0 || value == 1) return const SizedBox();
+                  if (value == 0 || value == 1) return const SizedBox();
 
-                    return LinearProgressIndicator(
-                      minHeight: 10,
-                      value: value,
-                    );
-                  }),
+                  return LinearProgressIndicator(
+                    minHeight: 10,
+                    value: value,
+                  );
+                },
+              ),
             ],
           ),
           body: TabBarView(

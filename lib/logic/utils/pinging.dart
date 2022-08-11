@@ -105,6 +105,11 @@ class Pinging {
 class PingingAddress {
   final String ip;
   final int port;
+  final int ms;
 
-  PingingAddress(this.ip, [this.port = 443]);
+  PingingAddress(
+    this.ip, [
+    this.port = 443,
+    this.ms = 9999,
+  ]);
 }

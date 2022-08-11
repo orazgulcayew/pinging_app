@@ -41,4 +41,20 @@ class SstpDataRepository {
       return SstpDataModel(ip: arr[0], port: int.parse(arr[1]));
     }).toList();
   }
+
+  Future<List<SstpDataModel>> getSstpList4({
+    void Function(int, int)? onReceiveProgress,
+    required String authKey,
+    required String deviceId,
+  }) async {
+    final data = await SstpDataApi().getAllHosts4(
+      onReceiveProgress: onReceiveProgress,
+      authKey: authKey,
+      deviceId: deviceId,
+    );
+
+    return (data as List)
+        .map<SstpDataModel>((e) => SstpDataModel.fromMap(e))
+        .toList();
+  }
 }

@@ -41,7 +41,10 @@ dependencies:
   equatable: ^2.0.3
   dio: ^4.0.6
   flutter_hooks: ^0.18.5+1
-  firebase_core: ^1.20.0
+  hive: ^2.2.3
+  device_info_plus: ^4.1.0
+  advertising_id: ^2.3.0
+  uuid: ^3.0.6
 
 dev_dependencies:
   flutter_test:
