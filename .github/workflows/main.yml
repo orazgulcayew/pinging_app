@@ -7,8 +7,8 @@ on:
       - main
 name: "Build & Release"
 jobs:
-  build:
-    name: Build & Release
+  build-android-ios:
+    name: Build android & ios files
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
@@ -31,15 +31,23 @@ jobs:
           ln -s ../Runner.app
           cd ..
           zip -r app.ipa Payload
-      - name: Push to Releases
-        uses: ncipollo/release-action@v1
+      - uses: actions/upload-artifact@v3
         with:
-          artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa,build/app/outputs/apk/release/*"
-          tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.TOKEN }}
+          name: artifacts
+          path: |
+            build/app/outputs/apk/debug/*
+            build/ios/iphoneos/app.ipa
+            build/app/outputs/apk/release/*
+      # - name: Push to Releases
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa,build/app/outputs/apk/release/*"
+      #     tag: v1.0.${{ github.run_number }}
+      #     token: ${{ secrets.TOKEN }}
   build-on-windows:
-    name: Build & Release
+    name: Build windows files & release
     runs-on: windows-latest
+    needs: build-android-ios
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v1
@@ -53,9 +61,18 @@ jobs:
       # - run: flutter build apk --debug --split-per-abi
       - run: ECHO 'Y' | flutter pub run msix:create
       # - run: flutter build apk --release
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts
+          
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+        working-directory: artifacts
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/windows/runner/Release/*.msix"
+          artifacts: "build/windows/runner/Release/*.msix,artifacts/*"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.TOKEN }}
+      
