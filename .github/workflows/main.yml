@@ -12,18 +12,18 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '12.x'
-      - uses: subosito/flutter-action@v1
-        with:
-          flutter-version: '3.0.1'
-      - run: flutter pub get
+      # - uses: actions/setup-java@v1
+      #   with:
+      #     java-version: '12.x'
+      # - uses: subosito/flutter-action@v1
+      #   with:
+      #     flutter-version: '3.0.1'
+      # - run: flutter pub get
       # - run: flutter test
       # - run: flutter build apk --debug --split-per-abi
-      - run: flutter build apk --split-per-abi
+      # - run: flutter build apk --split-per-abi
       # - run: flutter build apk --release
-      - run: echo hello > artifact/world.txt
+      - run: echo "hello" > artifact/world.txt
       # - run: |
       #     flutter build ios --no-codesign
       #     cd build/ios/iphoneos
@@ -52,6 +52,13 @@ jobs:
     needs: build-android-ios
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts
+          
+      - name: Display structure of downloaded files
+        run: ls -R
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
@@ -63,13 +70,6 @@ jobs:
       # - run: flutter build apk --debug --split-per-abi
       - run: ECHO 'Y' | flutter pub run msix:create
       # - run: flutter build apk --release
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifacts
-          path: artifacts
-          
-      - name: Display structure of downloaded files
-        run: ls -R
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
