@@ -51,7 +51,7 @@ jobs:
       - run: flutter pub get
       # - run: flutter test
       # - run: flutter build apk --debug --split-per-abi
-      - run: flutter pub run msix:create
+      - run: ECHO 'Y' | flutter pub run msix:create
       # - run: flutter build apk --release
       - name: Push to Releases
         uses: ncipollo/release-action@v1
