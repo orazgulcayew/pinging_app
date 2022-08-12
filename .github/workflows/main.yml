@@ -23,14 +23,15 @@ jobs:
       # - run: flutter build apk --debug --split-per-abi
       - run: flutter build apk --split-per-abi
       # - run: flutter build apk --release
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+      - run: echo hello > artifact/world.txt
+      # - run: |
+      #     flutter build ios --no-codesign
+      #     cd build/ios/iphoneos
+      #     mkdir Payload
+      #     cd Payload
+      #     ln -s ../Runner.app
+      #     cd ..
+      #     zip -r app.ipa Payload
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
@@ -38,6 +39,7 @@ jobs:
             build/app/outputs/apk/debug/*
             build/ios/iphoneos/app.ipa
             build/app/outputs/apk/release/*
+            artifact/world.txt
       # - name: Push to Releases
       #   uses: ncipollo/release-action@v1
       #   with:
@@ -67,8 +69,7 @@ jobs:
           path: artifacts
           
       - name: Display structure of downloaded files
-        run: ls -R artifacts
-        working-directory: artifacts
+        run: ls -R
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
