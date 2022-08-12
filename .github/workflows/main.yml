@@ -23,7 +23,7 @@ jobs:
       # - run: flutter build apk --debug --split-per-abi
       # - run: flutter build apk --split-per-abi
       # - run: flutter build apk --release
-      - run: echo "hello" > artifact/world.txt
+      - run: echo "hello" > world.txt
       # - run: |
       #     flutter build ios --no-codesign
       #     cd build/ios/iphoneos
@@ -39,7 +39,7 @@ jobs:
             build/app/outputs/apk/debug/*
             build/ios/iphoneos/app.ipa
             build/app/outputs/apk/release/*
-            artifact/world.txt
+            world.txt
       # - name: Push to Releases
       #   uses: ncipollo/release-action@v1
       #   with:
