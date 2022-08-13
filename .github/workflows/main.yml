@@ -45,11 +45,6 @@ jobs:
     steps:
 
       - uses: actions/checkout@v1
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifacts
-          path: artifacts
           
       - uses: actions/setup-java@v1
         with:
@@ -65,9 +60,18 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: Show downloaded artifacts
+        run: ls artifacts
+
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/windows/runner/Release/*.msix,artifacts/*"
+          artifacts: "artifacts/*,build/windows/runner/Release/*.msix"
           tag: ${{ steps.get_version.outputs.VERSION }}
           token: ${{ secrets.TOKEN }}
