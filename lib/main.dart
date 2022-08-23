@@ -58,6 +58,12 @@ class MyApp extends StatelessWidget {
         ),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
+          primaryColor: Colors.green,
+          textTheme: Theme.of(context).textTheme.apply(
+                bodyColor: Colors.green,
+                displayColor: Colors.green,
+              ),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
           /* dark theme settings */
         ),
         themeMode: ThemeMode.dark,

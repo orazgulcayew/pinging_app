@@ -53,7 +53,7 @@ class LoadingScreen {
         return Material(
           color: Colors.black.withAlpha(150),
           child: Center(
-            child: _LoadingWidget2(size: size, controller: controller),
+            child: _LoadingWidget(size: size, controller: controller),
           ),
         );
       },
@@ -75,61 +75,8 @@ class LoadingScreen {
   }
 }
 
-class _LoadingWidget1 extends StatelessWidget {
-  const _LoadingWidget1({
-    Key? key,
-    required this.size,
-    required this.controller,
-  }) : super(key: key);
-
-  final Size size;
-  final StreamController<String> controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: size.width * 0.8,
-        maxHeight: size.height * 0.8,
-        minWidth: size.width * 0.5,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 10),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 20),
-              StreamBuilder(
-                stream: controller.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(
-                      snapshot.data as String,
-                      textAlign: TextAlign.center,
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingWidget2 extends StatelessWidget {
-  const _LoadingWidget2({
+class _LoadingWidget extends StatelessWidget {
+  const _LoadingWidget({
     Key? key,
     required this.size,
     required this.controller,
@@ -158,8 +105,8 @@ class _LoadingWidget2 extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 10),
-              const CircularProgressIndicator(
-                color: Colors.green,
+              CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 20),
               StreamBuilder(
@@ -169,7 +116,6 @@ class _LoadingWidget2 extends StatelessWidget {
                     return Text(
                       snapshot.data as String,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.green),
                     );
                   } else {
                     return Container();
