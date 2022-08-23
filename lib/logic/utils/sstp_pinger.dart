@@ -1,17 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
-import 'package:flutter/foundation.dart' show immutable;
 import 'package:pinging/data/models/sstp_data.dart';
-
-@immutable
-class SstpPingerResult {
-  final bool success;
-  final int ms;
-  final SstpDataModel sstp;
-
-  const SstpPingerResult(this.sstp, this.success, this.ms);
-}
+import 'package:pinging/data/models/sstp_data_result.dart';
 
 class SstpPinger {
   final Duration? timeout;
@@ -78,7 +68,7 @@ class BulkSstpPinger {
 class BulkBulkSstpPinger {
   final int count;
   final Duration? timeout;
-  final Function(SstpPingerResult sstpPinger)? onPing;
+  final Function(SstpPingerResult sstpPinger, double progress)? onPing;
   final List<SstpDataModel> sstps;
 
   BulkBulkSstpPinger({
@@ -88,6 +78,8 @@ class BulkBulkSstpPinger {
     this.onPing,
   });
 
+  int _done = 0;
+
   Future<List<SstpPingerResult>> start() async {
     List<List<SstpDataModel>> chunks = sstps.splitIntoChunks(5);
 
@@ -95,7 +87,14 @@ class BulkBulkSstpPinger {
         .map((e) => BulkSstpPinger(
               sstps: e,
               timeout: timeout,
-              onPing: onPing,
+              onPing: (sstpPinger) {
+                _done++;
+                double progress = 0;
+                if (sstps.isNotEmpty) {
+                  progress = _done / sstps.length;
+                }
+                onPing?.call(sstpPinger, progress);
+              },
             ).pingAll())
         .toList();
 

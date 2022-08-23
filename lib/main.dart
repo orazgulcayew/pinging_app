@@ -49,9 +49,18 @@ class MyApp extends StatelessWidget {
         title: 'SSTPinger',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primaryColor: Colors.green,
+          textTheme: Theme.of(context).textTheme.apply(
+                bodyColor: Colors.green,
+                displayColor: Colors.green,
+              ),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          /* dark theme settings */
+        ),
+        themeMode: ThemeMode.dark,
         home: const RegisterPage(),
         onGenerateRoute: appRouter.onGenerateRoute,
         builder: (context, child) => MultiBlocListener(

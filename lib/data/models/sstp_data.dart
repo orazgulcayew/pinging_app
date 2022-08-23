@@ -1,6 +1,14 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+extension SortSstpList on List<SstpDataModel> {
+  List<SstpDataModel> sortByPingTime() {
+    sort(((a, b) =>
+        (a.ms ?? double.infinity).compareTo(b.ms ?? double.infinity)));
+    return this;
+  }
+}
+
 class SstpDataModel {
   final String ip;
   final int port;

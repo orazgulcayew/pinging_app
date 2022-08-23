@@ -6,12 +6,14 @@ import 'dart:io';
 import 'package:advertising_id/advertising_id.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:pinging/data/error/app_error.dart';
 import 'package:pinging/data/models/sstp_data.dart';
 import 'package:pinging/data/repositories/sstp_data.dart';
 import 'package:pinging/logic/utils/pinging.dart';
+import 'package:pinging/logic/utils/sstp_pinger.dart';
 import 'package:uuid/uuid.dart';
 
 part 'address_manager_state.dart';
@@ -60,20 +62,19 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
   Future<bool> load() => _oneProcessForMoment<bool>(false, () async {
         try {
-          emit(state.copyWith(pingingProgress: 0.01, isLoading: true));
+          emit(state.copyWith(isLoading: true));
 
           String deviceId = await _getId();
 
           var list = await SstpDataRepository().getSstpList4(
             authKey: state.authKey,
             deviceId: deviceId,
-            onReceiveProgress: ((done, total) {
-              if (total == -1) total = 30000;
-              emit(state.copyWith(pingingProgress: (done + 0.01) / total));
-            }),
           );
 
-          emit(state.copyWith(addresses: list, isLoading: false));
+          emit(state.copyWith(
+            addresses: list,
+            isLoading: false,
+          ));
 
           return true;
         } on DioError catch (err) {
@@ -119,6 +120,38 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
                 .toList();
 
             var history = <SstpDataModel>{...state.history, ...data}.toList();
+
+            emit(state.copyWith(
+              addresses: data,
+              history: history,
+            ));
+          },
+        );
+      });
+
+  ping2() => _oneProcessForMoment(true, () async {
+        final sstps = {...state.addresses, ...state.history}.toList();
+
+        BulkBulkSstpPinger pinger = BulkBulkSstpPinger(
+          count: 10,
+          sstps: sstps,
+          onPing: (sstpPinger, progress) {
+            emit(state.copyWith(pingingProgress: progress));
+          },
+        );
+
+        await pinger.start().then(
+          (result) {
+            debugPrint("${result.length}");
+            List<SstpDataModel> data = result
+                .where((e) => e.success)
+                .map((e) => e.sstp.copyWith(ms: e.ms))
+                .toList()
+                .sortByPingTime();
+
+            var history = <SstpDataModel>{...state.history, ...data}
+                .toList()
+                .sortByPingTime();
 
             emit(state.copyWith(
               addresses: data,

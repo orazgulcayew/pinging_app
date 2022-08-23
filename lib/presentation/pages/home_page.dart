@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:pinging/data/models/sstp_data.dart';
 import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
+import 'package:pinging/presentation/components/cards/sstp_address_card.dart';
+import 'package:pinging/presentation/components/pinging_progress_indicator.dart';
 import 'package:pinging/presentation/pages/register_page.dart';
 
 class HomePage extends HookWidget {
@@ -44,14 +45,7 @@ class HomePage extends HookWidget {
               SizedBox(
                 height: kBottomNavigationBarHeight,
                 child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        width: 1,
-                        color: Theme.of(context).dividerColor,
-                      ),
-                    ),
-                  ),
+                  color: Theme.of(context).bottomAppBarColor,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -65,15 +59,11 @@ class HomePage extends HookWidget {
                           tooltip: "Get all",
                         ),
                       ),
-                      const VerticalDivider(
-                        thickness: 1,
-                        width: 1,
-                      ),
                       Expanded(
                         child: IconButton(
                           icon: const Icon(Icons.upload),
                           onPressed: () {
-                            context.read<AddressManagerCubit>().ping();
+                            context.read<AddressManagerCubit>().ping2();
                           },
                           color: Colors.green,
                           tooltip: 'Ping all',
@@ -83,65 +73,13 @@ class HomePage extends HookWidget {
                   ),
                 ),
               ),
-              StreamBuilder<AddressManagerState>(
-                stream: context.read<AddressManagerCubit>().stream,
-                builder: (context, snapshot) {
-                  double value = 0;
-
-                  if (snapshot.hasData) {
-                    value = snapshot.data!.pingingProgress;
-                  }
-
-                  if (value == 0 || value == 1) return const SizedBox();
-
-                  return LinearProgressIndicator(
-                    minHeight: 10,
-                    value: value,
-                  );
-                },
-              ),
+              const PingingProgressIndicator(),
             ],
           ),
           body: TabBarView(
             children: [
-              Builder(
-                builder: (context) {
-                  var addresses =
-                      context.select<AddressManagerCubit, List<SstpDataModel>>(
-                          (value) => value.state.addresses);
-
-                  final iterable = addresses.map<Widget>(
-                    (e) => _createSstpCard(context, e),
-                  );
-
-                  return Scrollbar(
-                    controller: scrollController1,
-                    child: ListView(
-                      controller: scrollController1,
-                      shrinkWrap: true,
-                      children: iterable.toList(),
-                    ),
-                  );
-                },
-              ),
-              Builder(builder: (context) {
-                var history =
-                    context.select<AddressManagerCubit, List<SstpDataModel>>(
-                        (value) => value.state.history);
-
-                final iterable = history.map<Widget>(
-                  (e) => _createSstpCard(context, e),
-                );
-
-                return Scrollbar(
-                  controller: scrollController2,
-                  child: ListView(
-                    controller: scrollController2,
-                    shrinkWrap: true,
-                    children: iterable.toList(),
-                  ),
-                );
-              }),
+              _tabBarView1(scrollController1),
+              _tabBarView2(scrollController2),
             ],
           ),
         ),
@@ -149,20 +87,48 @@ class HomePage extends HookWidget {
     );
   }
 
-  Widget _createSstpCard(BuildContext context, SstpDataModel e) {
-    return Card(
-      child: ListTile(
-        title: Text("${e.ip}:${e.port}"),
-        onTap: () {
-          Clipboard.setData(ClipboardData(text: "${e.ip}:${e.port}"));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              duration: const Duration(milliseconds: 300),
-              content: Text("${e.ip}:${e.port} copied to clipboard"),
-            ),
-          );
-        },
-      ),
+  Builder _tabBarView2(ScrollController scrollController2) {
+    return Builder(builder: (context) {
+      var history = context.select<AddressManagerCubit, List<SstpDataModel>>(
+          (value) => value.state.history);
+
+      final sstps = history.toList();
+
+      return Scrollbar(
+        controller: scrollController2,
+        child: ListView.builder(
+          itemCount: sstps.length,
+          itemBuilder: (context, index) {
+            return SstpAddressCard(sstp: sstps[index]);
+          },
+          controller: scrollController2,
+          shrinkWrap: true,
+        ),
+      );
+    });
+  }
+
+  Builder _tabBarView1(ScrollController scrollController1) {
+    return Builder(
+      builder: (context) {
+        var addresses =
+            context.select<AddressManagerCubit, List<SstpDataModel>>(
+                (value) => value.state.addresses);
+
+        final sstps = addresses.toList();
+
+        return Scrollbar(
+          controller: scrollController1,
+          child: ListView.builder(
+            itemCount: sstps.length,
+            itemBuilder: (context, index) {
+              return SstpAddressCard(sstp: sstps[index]);
+            },
+            controller: scrollController1,
+            shrinkWrap: true,
+          ),
+        );
+      },
     );
   }
 }
