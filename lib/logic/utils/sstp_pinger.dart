@@ -17,7 +17,7 @@ class SstpPinger {
       final socket = await Socket.connect(
         sstp.ip,
         sstp.port,
-        timeout: timeout ?? timeout,
+        timeout: timeout,
       );
 
       socket.destroy();
@@ -74,7 +74,7 @@ class BulkBulkSstpPinger {
   BulkBulkSstpPinger({
     required this.count,
     required this.sstps,
-    this.timeout = const Duration(milliseconds: 9999),
+    this.timeout = const Duration(milliseconds: 3000),
     this.onPing,
   });
 

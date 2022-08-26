@@ -72,7 +72,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
           );
 
           emit(state.copyWith(
-            addresses: list,
+            addresses: {...state.addresses, ...list}.toList(),
             isLoading: false,
           ));
 
