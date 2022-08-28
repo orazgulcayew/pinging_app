@@ -53,7 +53,7 @@ class HomePage extends HookWidget {
                         child: IconButton(
                           icon: const Icon(Icons.download),
                           onPressed: () {
-                            context.read<AddressManagerCubit>().load();
+                            context.read<AddressManagerCubit>().loadAll();
                           },
                           color: Colors.blue,
                           tooltip: "Get all",
@@ -63,7 +63,7 @@ class HomePage extends HookWidget {
                         child: IconButton(
                           icon: const Icon(Icons.upload),
                           onPressed: () {
-                            context.read<AddressManagerCubit>().ping2();
+                            context.read<AddressManagerCubit>().pingAll();
                           },
                           color: Colors.green,
                           tooltip: 'Ping all',

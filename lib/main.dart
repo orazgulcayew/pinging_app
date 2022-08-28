@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
-import 'package:pinging/presentation/components/dialogs/show_load_error.dart';
-import 'package:pinging/presentation/components/loading/loading_screen.dart';
-import 'package:pinging/presentation/pages/register_page.dart';
+import 'package:pinging/presentation/app.dart';
 import 'package:pinging/presentation/router/app_router.dart';
 
 void main() async {
@@ -18,87 +14,10 @@ void main() async {
 
   HydratedBlocOverrides.runZoned(
     () => runApp(
-      MyApp(
+      App(
         appRouter: AppRouter(),
       ),
     ),
     storage: storage,
   );
-}
-
-final navigatorKey = GlobalKey<NavigatorState>();
-
-class MyApp extends StatelessWidget {
-  final AppRouter appRouter;
-
-  const MyApp({
-    Key? key,
-    required this.appRouter,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AddressManagerCubit>(
-          create: (_) => AddressManagerCubit(),
-        ),
-      ],
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'SSTPinger',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primaryColor: Colors.green,
-          textTheme: Theme.of(context).textTheme.apply(
-                bodyColor: Colors.green,
-                displayColor: Colors.green,
-              ),
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          primaryColor: Colors.green,
-          textTheme: Theme.of(context).textTheme.apply(
-                bodyColor: Colors.green,
-                displayColor: Colors.green,
-              ),
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          /* dark theme settings */
-        ),
-        themeMode: ThemeMode.dark,
-        home: const RegisterPage(),
-        onGenerateRoute: appRouter.onGenerateRoute,
-        builder: (context, child) => MultiBlocListener(
-          listeners: [
-            BlocListener<AddressManagerCubit, AddressManagerState>(
-              listenWhen: (previous, current) =>
-                  previous.error != current.error,
-              listener: (context, state) {
-                if (state.error != null) {
-                  showLoadError(
-                    error: state.error!,
-                    context: navigatorKey.currentContext!,
-                  );
-                }
-              },
-            ),
-            BlocListener<AddressManagerCubit, AddressManagerState>(
-              listener: (context, state) {
-                if (state.isLoading) {
-                  LoadingScreen.instance().show(
-                    navigatorKey: navigatorKey,
-                    text: "Loading",
-                  );
-                } else {
-                  LoadingScreen.instance().hide();
-                }
-              },
-            ),
-          ],
-          child: child!,
-        ),
-      ),
-    );
-  }
 }

@@ -1,0 +1,28 @@
+name: pinging
+version: 0.1.0
+summary: pinging
+description: SSTP finder.
+
+confinement: strict
+base: core18
+grade: stable
+
+slots:
+  dbus-pinging: # adjust accordingly to your app name
+    interface: dbus
+    bus: session
+    name: com.pinging.pinging # adjust accordingly to your app name and
+
+apps:
+  pinging:
+    command: pinging
+    extensions: [flutter-master] # Where "master" defines which Flutter channel to use for the build
+    plugs:
+    - network
+    slots:
+      - dbus-pinging
+parts:
+  pinging:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart # The main entry-point file of the application

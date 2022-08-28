@@ -70,7 +70,7 @@ class RegisterPage extends HookWidget {
     required String value,
   }) {
     cubit.updateAuthKey(value);
-    cubit.load().then(
+    cubit.loadAll().then(
       (value) {
         if (!value) return;
 
