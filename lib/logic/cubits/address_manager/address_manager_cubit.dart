@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-// ignore: depend_on_referenced_packages
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:pinging/data/error/app_error.dart';
 import 'package:pinging/data/models/sstp_data.dart';
@@ -41,7 +39,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
           String deviceId =
               await DeviceIdGenerator().getDeviceId(state.deviceId);
 
-          var list = await SstpDataRepository().getSstpList4(
+          var list = await SstpDataRepository().getSstpList(
             authKey: state.authKey,
             deviceId: deviceId,
           );
@@ -87,18 +85,18 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
 
         await pinger.start().then(
           (result) {
-            List<SstpDataModel> data = result
+            List<SstpDataModel> addresses = result
                 .where((e) => e.success)
                 .map((e) => e.sstp.copyWith(ms: e.ms))
                 .toList()
                 .sortByPingTime();
 
-            var history = <SstpDataModel>{...state.history, ...data}
+            var history = <SstpDataModel>{...state.history, ...addresses}
                 .toList()
                 .sortByPingTime();
 
             emit(state.copyWith(
-              addresses: data,
+              addresses: addresses,
               history: history,
             ));
           },
