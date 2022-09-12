@@ -39,14 +39,17 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
           String deviceId =
               await DeviceIdGenerator().getDeviceId(state.deviceId);
 
-          var list = await SstpDataRepository().getSstpList(
+          var list = await SstpDataRepository().getSstpList2(
             authKey: state.authKey,
             deviceId: deviceId,
+            time: state.lastRequestedTime ?? DateTime(2000),
+            // time: DateTime(2000),
           );
 
           emit(state.copyWith(
             addresses: {...state.addresses, ...list}.toList(),
             isLoading: false,
+            lastRequestedTime: DateTime.now(),
           ));
 
           return true;
@@ -75,11 +78,24 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
   pingAll() => _oneProcessForMoment(true, () async {
         final sstps = {...state.addresses, ...state.history}.toList();
 
+        // empty adresses
+        emit(state.copyWith(addresses: []));
+
         BulkBulkSstpPinger pinger = BulkBulkSstpPinger(
           count: 10,
           sstps: sstps,
           onPing: (sstpPinger, progress) {
-            emit(state.copyWith(pingingProgress: progress));
+            if (sstpPinger.success) {
+              emit(state.copyWith(
+                addresses: {
+                  ...state.addresses,
+                  sstpPinger.sstp.copyWith(ms: sstpPinger.ms),
+                }.toList(),
+                pingingProgress: progress,
+              ));
+            } else {
+              emit(state.copyWith(pingingProgress: progress));
+            }
           },
         );
 
@@ -91,7 +107,7 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
                 .toList()
                 .sortByPingTime();
 
-            var history = <SstpDataModel>{...state.history, ...addresses}
+            var history = <SstpDataModel>{...state.addresses, ...sstps}
                 .toList()
                 .sortByPingTime();
 

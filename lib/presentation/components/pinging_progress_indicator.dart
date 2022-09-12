@@ -21,6 +21,7 @@ class PingingProgressIndicator extends StatelessWidget {
         if (value == 0 || value == 1) return const SizedBox();
 
         return LinearProgressIndicator(
+          color: Colors.green,
           minHeight: 10,
           value: value,
         );

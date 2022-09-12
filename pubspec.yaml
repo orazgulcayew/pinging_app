@@ -42,9 +42,10 @@ dependencies:
   dio: ^4.0.6
   flutter_hooks: ^0.18.5+1
   hive: ^2.2.3
-  device_info_plus: ^4.1.0
   advertising_id: ^2.3.0
   uuid: ^3.0.6
+  firebase_analytics: ^9.3.3
+  firebase_core: ^1.21.1
 
 dev_dependencies:
   flutter_test:

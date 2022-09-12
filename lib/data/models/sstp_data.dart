@@ -15,6 +15,8 @@ class SstpDataModel {
   final int? ms;
   final String? hostname;
   final LocationModel? location;
+  final String? info;
+  final String? info2;
 
   SstpDataModel({
     required this.ip,
@@ -22,6 +24,8 @@ class SstpDataModel {
     this.ms,
     this.hostname,
     this.location,
+    this.info,
+    this.info2,
   });
 
   SstpDataModel copyWith({
@@ -30,6 +34,8 @@ class SstpDataModel {
     int? ms,
     String? hostname,
     LocationModel? location,
+    String? info,
+    String? info2,
   }) {
     return SstpDataModel(
       ip: ip ?? this.ip,
@@ -37,6 +43,8 @@ class SstpDataModel {
       ms: ms ?? this.ms,
       hostname: hostname ?? this.hostname,
       location: location ?? this.location,
+      info: info ?? this.info,
+      info2: info2 ?? this.info2,
     );
   }
 
@@ -47,6 +55,8 @@ class SstpDataModel {
       'ms': ms,
       'hostname': hostname,
       'location': location?.toMap(),
+      'info': info,
+      'info2': info2,
     };
   }
 
@@ -59,6 +69,8 @@ class SstpDataModel {
       location: map['location'] != null
           ? LocationModel.fromMap(map['location'] as Map<String, dynamic>)
           : null,
+      info: map['info'] != null ? map['info'] as String : null,
+      info2: map['info2'] != null ? map['info2'] as String : null,
     );
   }
 
@@ -69,7 +81,7 @@ class SstpDataModel {
 
   @override
   String toString() {
-    return 'SstpDataModel(ip: $ip, port: $port, ms: $ms, hostname: $hostname, location: $location)';
+    return toMap().toString();
   }
 
   @override

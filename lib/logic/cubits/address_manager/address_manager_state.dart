@@ -8,6 +8,7 @@ class AddressManagerState extends Equatable {
   final AppError? error;
   final String? deviceId;
   final bool isLoading;
+  final DateTime? lastRequestedTime;
 
   const AddressManagerState({
     required this.addresses,
@@ -17,6 +18,7 @@ class AddressManagerState extends Equatable {
     this.error,
     this.deviceId,
     this.isLoading = false,
+    this.lastRequestedTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +27,7 @@ class AddressManagerState extends Equatable {
       'history': history.map((e) => e.toMap()).toList(),
       'authKey': authKey,
       'deviceId': deviceId,
+      'lastRequestedTime': lastRequestedTime?.millisecondsSinceEpoch,
     };
   }
 
@@ -32,14 +35,17 @@ class AddressManagerState extends Equatable {
     if (map == null) return AddressManagerInitial();
 
     return AddressManagerState(
-        addresses: List.of(map['addresses'])
-            .map((e) => SstpDataModel.fromMap(e))
-            .toList(),
-        history: List.of(map['history'])
-            .map((e) => SstpDataModel.fromMap(e))
-            .toList(),
-        authKey: map['authKey'],
-        deviceId: map['deviceId']);
+      addresses: List.of(map['addresses'])
+          .map((e) => SstpDataModel.fromMap(e))
+          .toList(),
+      history:
+          List.of(map['history']).map((e) => SstpDataModel.fromMap(e)).toList(),
+      authKey: map['authKey'],
+      deviceId: map['deviceId'],
+      lastRequestedTime: map['lastRequestedTime'] == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(map['lastRequestedTime']),
+    );
   }
 
   String toJson() => json.encode(toMap());
@@ -56,6 +62,7 @@ class AddressManagerState extends Equatable {
         error,
         deviceId,
         isLoading,
+        lastRequestedTime,
       ];
 
   AddressManagerState copyWith({
@@ -66,6 +73,7 @@ class AddressManagerState extends Equatable {
     AppError? error,
     String? deviceId,
     bool? isLoading,
+    DateTime? lastRequestedTime,
   }) {
     return AddressManagerState(
       authKey: authKey ?? this.authKey,
@@ -75,6 +83,7 @@ class AddressManagerState extends Equatable {
       error: error ?? this.error,
       deviceId: deviceId ?? this.deviceId,
       isLoading: isLoading ?? this.isLoading,
+      lastRequestedTime: lastRequestedTime ?? this.lastRequestedTime,
     );
   }
 }

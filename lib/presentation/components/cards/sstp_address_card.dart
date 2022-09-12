@@ -12,24 +12,58 @@ class SstpAddressCard extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
         shape: const BeveledRectangleBorder(
-          side: BorderSide(color: Colors.green),
+          side: BorderSide(
+            color: Colors.green,
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.0),
             bottomRight: Radius.circular(20.0),
           ),
         ),
-        subtitle: Row(
+        leading: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               sstp.location?.short ?? "--",
-              style: const TextStyle(color: Colors.green),
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const Text("  "),
-            Text(sstp.hostname ?? ("- " * 10)),
           ],
         ),
-        title: Text("${sstp.ip}:${sstp.port}"),
-        trailing: Text("${sstp.ms ?? "---"}ms"),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            children: [
+              // Text(
+              //   sstp.location?.short ?? "--",
+              //   style: const TextStyle(color: Colors.green),
+              // ),
+              // const Text("  "),
+              Expanded(
+                child: Text(
+                  sstp.info ?? ("- " * 10),
+                  style: const TextStyle(fontSize: 11.0),
+                  // overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        title: Text(
+          "${sstp.ip}:${sstp.port}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        trailing: Text(
+          "${sstp.ms ?? "---"}ms",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         onTap: () {
           Clipboard.setData(ClipboardData(text: "${sstp.ip}:${sstp.port}"));
           ScaffoldMessenger.of(context).showSnackBar(
