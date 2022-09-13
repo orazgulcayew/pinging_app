@@ -4,7 +4,7 @@ on:
       - "v*"
 name: "Build & Release"
 jobs:
-  build-android-ios:
+  build-android:
     name: Build android and release
     runs-on: macos-latest
     steps:

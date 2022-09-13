@@ -39,17 +39,18 @@ class AddressManagerCubit extends Cubit<AddressManagerState>
           String deviceId =
               await DeviceIdGenerator().getDeviceId(state.deviceId);
 
-          var list = await SstpDataRepository().getSstpList2(
+          var data = await SstpDataRepository().getSstpList(
             authKey: state.authKey,
             deviceId: deviceId,
-            time: state.lastRequestedTime ?? DateTime(2000),
-            // time: DateTime(2000),
+            time: state.lastRequestedTime,
           );
+
+          var list = data.sstps;
 
           emit(state.copyWith(
             addresses: {...state.addresses, ...list}.toList(),
             isLoading: false,
-            lastRequestedTime: DateTime.now(),
+            lastRequestedTime: data.time,
           ));
 
           return true;

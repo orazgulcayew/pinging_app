@@ -8,7 +8,7 @@ class AddressManagerState extends Equatable {
   final AppError? error;
   final String? deviceId;
   final bool isLoading;
-  final DateTime? lastRequestedTime;
+  final int lastRequestedTime;
 
   const AddressManagerState({
     required this.addresses,
@@ -18,7 +18,7 @@ class AddressManagerState extends Equatable {
     this.error,
     this.deviceId,
     this.isLoading = false,
-    this.lastRequestedTime,
+    this.lastRequestedTime = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -27,7 +27,7 @@ class AddressManagerState extends Equatable {
       'history': history.map((e) => e.toMap()).toList(),
       'authKey': authKey,
       'deviceId': deviceId,
-      'lastRequestedTime': lastRequestedTime?.millisecondsSinceEpoch,
+      'lastRequestedTime': lastRequestedTime,
     };
   }
 
@@ -42,9 +42,7 @@ class AddressManagerState extends Equatable {
           List.of(map['history']).map((e) => SstpDataModel.fromMap(e)).toList(),
       authKey: map['authKey'],
       deviceId: map['deviceId'],
-      lastRequestedTime: map['lastRequestedTime'] == null
-          ? null
-          : DateTime.fromMillisecondsSinceEpoch(map['lastRequestedTime']),
+      lastRequestedTime: map['lastRequestedTime'],
     );
   }
 
@@ -73,7 +71,7 @@ class AddressManagerState extends Equatable {
     AppError? error,
     String? deviceId,
     bool? isLoading,
-    DateTime? lastRequestedTime,
+    int? lastRequestedTime,
   }) {
     return AddressManagerState(
       authKey: authKey ?? this.authKey,
