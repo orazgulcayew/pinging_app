@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
-import 'package:pinging/presentation/components/dialogs/show_load_error.dart';
+import 'package:pinging/logic/blocs/app_bloc/app_bloc.dart';
+import 'package:pinging/logic/blocs/app_error_bloc/app_error_bloc.dart';
+import 'package:pinging/logic/blocs/loading_bloc/loading_bloc.dart';
+import 'package:pinging/presentation/components/dialogs/show_app_error.dart';
 import 'package:pinging/presentation/components/loading/loading_screen.dart';
 import 'package:pinging/presentation/pages/register_page.dart';
 import 'package:pinging/presentation/router/app_router.dart';
@@ -18,11 +20,17 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appErrorBloc = AppErrorBloc();
+    final loadingBloc = LoadingBloc();
+
+    final appBloc =
+        AppBloc(appErrorBloc: appErrorBloc, loadingBloc: loadingBloc);
+
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AddressManagerCubit>(
-          create: (_) => AddressManagerCubit(),
-        ),
+        BlocProvider<LoadingBloc>(create: (_) => loadingBloc),
+        BlocProvider<AppErrorBloc>(create: (_) => appErrorBloc),
+        BlocProvider<AppBloc>(create: (_) => appBloc),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
@@ -51,27 +59,31 @@ class App extends StatelessWidget {
         onGenerateRoute: appRouter.onGenerateRoute,
         builder: (context, child) => MultiBlocListener(
           listeners: [
-            BlocListener<AddressManagerCubit, AddressManagerState>(
-              listenWhen: (previous, current) =>
-                  previous.error != current.error,
-              listener: (context, state) {
-                if (state.error != null) {
-                  showLoadError(
-                    error: state.error!,
-                    context: navigatorKey.currentContext!,
-                  );
-                }
-              },
-            ),
-            BlocListener<AddressManagerCubit, AddressManagerState>(
-              listener: (context, state) {
-                if (state.isLoading) {
+            BlocListener<LoadingBloc, LoadState>(
+              listener: (_, state) {
+                if (state is LoadStateOn) {
                   LoadingScreen.instance().show(
                     navigatorKey: navigatorKey,
                     text: "Loading",
                   );
                 } else {
                   LoadingScreen.instance().hide();
+                }
+              },
+            ),
+            BlocListener<AppErrorBloc, AppErrorState>(
+              listener: (context, state) {
+                if (state.error != null) {
+                  final error = state.error!;
+
+                  showAppError(
+                    error: error,
+                    context: navigatorKey.currentContext!,
+                  ).then((value) {
+                    context
+                        .read<AppErrorBloc>()
+                        .add(AppErrorRemoveEvent(error));
+                  });
                 }
               },
             ),

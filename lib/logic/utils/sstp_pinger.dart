@@ -68,7 +68,11 @@ class BulkSstpPinger {
 class BulkBulkSstpPinger {
   final int count;
   final Duration? timeout;
-  final Function(SstpPingerResult sstpPinger, double progress)? onPing;
+  final Function(
+    SstpPingerResult sstpPinger,
+    ProgressStatus progress,
+    int index,
+  )? onPing;
   final List<SstpDataModel> sstps;
 
   BulkBulkSstpPinger({
@@ -78,25 +82,29 @@ class BulkBulkSstpPinger {
     this.onPing,
   });
 
-  int _done = 0;
-
   Future<List<SstpPingerResult>> start() async {
-    List<List<SstpDataModel>> chunks = sstps.splitIntoChunks(5);
+    final chunks = sstps.splitIntoChunks(count);
+    final done = List<int>.generate(chunks.length, (_) => 0);
 
-    List<Future<List<SstpPingerResult>>> futures = chunks
-        .map((e) => BulkSstpPinger(
-              sstps: e,
-              timeout: timeout,
-              onPing: (sstpPinger) {
-                _done++;
-                double progress = 0;
-                if (sstps.isNotEmpty) {
-                  progress = _done / sstps.length;
-                }
-                onPing?.call(sstpPinger, progress);
-              },
-            ).pingAll())
-        .toList();
+    List<Future<List<SstpPingerResult>>> futures = [];
+
+    for (int i = 0; i < chunks.length; i++) {
+      final sstps = chunks[i];
+
+      futures.add(
+        BulkSstpPinger(
+          sstps: sstps,
+          timeout: timeout,
+          onPing: (sstpPinger) {
+            onPing?.call(
+              sstpPinger,
+              ProgressStatus(++done[i], sstps.length),
+              i,
+            );
+          },
+        ).pingAll(),
+      );
+    }
 
     final list = await Future.wait(futures);
 
@@ -130,4 +138,16 @@ extension ChunksJoiner<T> on List<List<T>> {
 
     return result;
   }
+}
+
+class ProgressStatus {
+  final int count;
+  final int total;
+  final bool done;
+
+  ProgressStatus(this.count, this.total, [this.done = false]);
+
+  factory ProgressStatus.done() => ProgressStatus(0, 0, true);
+
+  double get value => total == 0 ? 0 : count / total;
 }

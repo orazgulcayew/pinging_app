@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:pinging/data/storage/storage.dart';
 import 'package:pinging/presentation/app.dart';
 import 'package:pinging/presentation/router/app_router.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -12,10 +11,12 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  var dir = await getApplicationDocumentsDirectory();
-  final storage = await HydratedStorage.build(
-    storageDirectory: dir,
-  );
+  // var dir = await getApplicationDocumentsDirectory();
+  // final storage = await HydratedStorage.build(
+  //   storageDirectory: dir,
+  // );
+
+  await Storage.init();
 
   if (Platform.isAndroid) {
     // Firebase
@@ -26,12 +27,13 @@ void main() async {
     FirebaseAnalytics.instance;
   }
 
-  HydratedBlocOverrides.runZoned(
-    () => runApp(
-      App(
-        appRouter: AppRouter(),
-      ),
+  // HydratedBlocOverrides.runZoned(
+  // () =>
+  runApp(
+    App(
+      appRouter: AppRouter(),
     ),
-    storage: storage,
+    // ),
+    // storage: storage,
   );
 }

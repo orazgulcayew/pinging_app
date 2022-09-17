@@ -1,5 +1,5 @@
 import 'package:pinging/data/models/sstp_data_response.dart';
-import 'package:pinging/data/providers/sstp_data_api.dart';
+import 'package:pinging/data/api/sstp_data_api.dart';
 
 class SstpDataRepository {
   Future<SstpDataResponse> getSstpList({

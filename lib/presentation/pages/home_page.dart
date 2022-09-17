@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
+import 'package:pinging/data/storage/storage.dart';
+import 'package:pinging/logic/blocs/app_bloc/app_bloc.dart';
+import 'package:pinging/logic/utils/sstp_pinger.dart';
 import 'package:pinging/presentation/components/cards/sstp_address_card.dart';
 import 'package:pinging/presentation/components/pinging_progress_indicator.dart';
 import 'package:pinging/presentation/pages/register_page.dart';
@@ -28,23 +30,17 @@ class HomePage extends HookWidget {
               },
             ),
           ],
-          // bottom: PreferredSize(
-          //   preferredSize: const Size.fromHeight(kTextTabBarHeight),
-          //   child: Builder(builder: (context) {
-          //     final history = context.read<AddressManagerCubit>().state.history;
-          //     return Padding(
-          //       padding: const EdgeInsets.all(16.0),
-          //       child: Text("Total count: ${history.length}"),
-          //     );
-          //   }),
-          // ),
-          title: Builder(
-            builder: (context) {
-              final historyLength = context.select<AddressManagerCubit, int>(
-                  (e) => e.state.history.length);
+          title: BlocBuilder<AppBloc, AppState>(
+            buildWhen: (_, state) => state is AppStateAppBarProgress,
+            builder: (context, state) {
+              String text = "Pinging App ";
+
+              if (state is AppStateAppBarProgress) {
+                text += "${state.progress.count}/${state.progress.total}";
+              }
 
               return Text(
-                "Polmuk ($historyLength)",
+                text,
                 style: const TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
@@ -68,7 +64,7 @@ class HomePage extends HookWidget {
                       child: IconButton(
                         icon: const Icon(Icons.download),
                         onPressed: () {
-                          context.read<AddressManagerCubit>().loadAll();
+                          selectFiles(context);
                         },
                         color: Colors.white,
                         tooltip: "Get all",
@@ -78,7 +74,7 @@ class HomePage extends HookWidget {
                       child: IconButton(
                         icon: const Icon(Icons.upload),
                         onPressed: () {
-                          context.read<AddressManagerCubit>().pingAll();
+                          context.read<AppBloc>().add(AppEventPing());
                         },
                         color: Colors.green,
                         tooltip: 'Ping all',
@@ -91,37 +87,18 @@ class HomePage extends HookWidget {
             const PingingProgressIndicator(),
           ],
         ),
-        body: _tabBarView1(scrollController1),
+        body: buildBody(scrollController1),
       ),
     );
   }
 
-  // Builder _tabBarView2(ScrollController scrollController2) {
-  //   return Builder(builder: (context) {
-  //     var history = context.select<AddressManagerCubit, List<SstpDataModel>>(
-  //         (value) => value.state.history);
-
-  //     final sstps = history.toList();
-
-  //     return Scrollbar(
-  //       controller: scrollController2,
-  //       child: ListView.builder(
-  //         itemCount: sstps.length,
-  //         itemBuilder: (context, index) {
-  //           return SstpAddressCard(sstp: sstps[index]);
-  //         },
-  //         controller: scrollController2,
-  //         shrinkWrap: true,
-  //       ),
-  //     );
-  //   });
-  // }
-
-  Widget _tabBarView1(ScrollController scrollController1) {
-    return BlocBuilder<AddressManagerCubit, AddressManagerState>(
-      buildWhen: (previous, current) => previous.addresses != current.addresses,
+  Widget buildBody(ScrollController scrollController1) {
+    return BlocBuilder<AppBloc, AppState>(
+      buildWhen: (_, state) => state is AppStateSstps,
       builder: (context, state) {
-        final sstps = state.addresses;
+        if (state is! AppStateSstps) return const SizedBox();
+
+        final sstps = state.sstps.toList();
 
         return Scrollbar(
           controller: scrollController1,
@@ -133,6 +110,173 @@ class HomePage extends HookWidget {
             controller: scrollController1,
             shrinkWrap: true,
           ),
+        );
+      },
+    );
+  }
+
+  selectFiles(BuildContext context) {
+    final bloc = context.read<AppBloc>();
+
+    bloc.add(AppEventLoadFiles());
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return BlocBuilder<AppBloc, AppState>(
+          buildWhen: (_, state) => state is AppStateFiles,
+          builder: (context, state) {
+            Widget child = const Center(child: CircularProgressIndicator());
+
+            if (state is AppStateFiles) {
+              final files = state.files.toList();
+              final cached = state.cached.toList();
+
+              child = ListView.builder(
+                shrinkWrap: true,
+                itemCount: files.length,
+                itemBuilder: (context, index) {
+                  final file = files[index];
+
+                  Icon icon = const Icon(
+                    Icons.download_rounded,
+                    color: Colors.green,
+                  );
+
+                  if (cached.any((e) => e.name == file.name)) {
+                    icon = const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                    );
+
+                    final cachedFile =
+                        cached.firstWhere((e) => e.name == file.name);
+
+                    if (file.byteSize != cachedFile.byteSize) {
+                      icon = const Icon(
+                        Icons.refresh_rounded,
+                        color: Colors.green,
+                      );
+                    }
+                  }
+
+                  return Card(
+                    child: BlocBuilder<AppBloc, AppState>(
+                      buildWhen: (_, state) =>
+                          state is AppStateSstpFileChecked &&
+                          state.key == index,
+                      builder: (context, state) {
+                        bool checked = bloc.isFileSelected(file.name);
+
+                        // if (state is AppStateSstpFileChecked) {
+                        //   checked = state.value;
+                        // }
+
+                        return CheckboxListTile(
+                          value: checked,
+                          onChanged: (_) {
+                            bloc.add(AppEventToggleGhFile(files, index));
+                          },
+                          title: Text(file.name),
+                          secondary: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  bloc.add(
+                                    AppEventDeleteGhFile(files, index),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.delete_rounded,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  bloc.add(
+                                    AppEventDownloadGhFile(files, index),
+                                  );
+                                },
+                                icon: icon,
+                              ),
+                            ],
+                          ),
+                          subtitle: BlocBuilder<AppBloc, AppState>(
+                            buildWhen: (_, state) =>
+                                state is AppStateUniqueProgress &&
+                                state.key == index,
+                            builder: (context, state) {
+                              double value = 0;
+                              ProgressStatus? progress;
+                              String text = "Empty";
+
+                              if (Storage()
+                                  .sstpFiles
+                                  .values
+                                  .any((e) => e.name == files[index].name)) {
+                                value = 1;
+                                text = "Done";
+                              }
+
+                              if (state is AppStateUniqueProgress) {
+                                progress = state.progress;
+
+                                if (progress.total != 0) {
+                                  value = progress.count / progress.total;
+                                }
+
+                                text = "${progress.count}/${progress.total}";
+
+                                if (progress.done) {
+                                  text = "Done";
+                                }
+                              }
+
+                              return Stack(
+                                children: [
+                                  LinearProgressIndicator(
+                                    color: Colors.green,
+                                    value: value,
+                                    minHeight: 15,
+                                  ),
+                                  Center(
+                                    child: Text(
+                                      text,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }
+            final size = MediaQuery.of(context).size;
+            return AlertDialog(
+              title: const Text("Search from files:"),
+              content: SizedBox(
+                width: size.width > 400 ? 400 : size.width,
+                child: child,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Ok"),
+                ),
+              ],
+            );
+          },
         );
       },
     );

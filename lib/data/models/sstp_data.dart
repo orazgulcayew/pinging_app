@@ -66,7 +66,7 @@ class SstpDataModel {
       port: map['port'] as int,
       ms: map['ms'] != null ? map['ms'] as int : null,
       hostname: map['hostname'] != null ? map['hostname'] as String : null,
-      location: map['location'] != null
+      location: map['location'] != null && map['location'] is Map
           ? LocationModel.fromMap(map['location'] as Map<String, dynamic>)
           : null,
       info: map['info'] != null ? map['info'] as String : null,

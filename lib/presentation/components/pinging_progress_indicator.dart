@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pinging/logic/cubits/address_manager/address_manager_cubit.dart';
+import 'package:pinging/logic/blocs/app_bloc/app_bloc.dart';
 
 class PingingProgressIndicator extends StatelessWidget {
   const PingingProgressIndicator({
@@ -9,21 +9,40 @@ class PingingProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<AddressManagerState>(
-      stream: context.read<AddressManagerCubit>().stream,
-      builder: (context, snapshot) {
-        double value = 0;
+    const nothing = SizedBox();
 
-        if (snapshot.hasData) {
-          value = snapshot.data!.pingingProgress;
-        }
+    return BlocBuilder<AppBloc, AppState>(
+      buildWhen: (_, state) => state is AppStateInitialPingingProgress,
+      builder: (context, state) {
+        int count = 0;
 
-        if (value == 0 || value == 1) return const SizedBox();
+        if (state is AppStateInitialPingingProgress) count = state.chunkCount;
 
-        return LinearProgressIndicator(
-          color: Colors.green,
-          minHeight: 10,
-          value: value,
+        return Row(
+          children: List.generate(
+            count,
+            (index) => Expanded(
+              child: BlocBuilder<AppBloc, AppState>(
+                buildWhen: (_, state) =>
+                    state is AppStatePingingProgress && state.process == index,
+                builder: (context, state) {
+                  if (state is! AppStatePingingProgress) return nothing;
+
+                  final progress = state.progress;
+
+                  if (progress.value == 0 || progress.value == 1) {
+                    return nothing;
+                  }
+
+                  return LinearProgressIndicator(
+                    color: Colors.green,
+                    minHeight: 10,
+                    value: progress.value,
+                  );
+                },
+              ),
+            ),
+          ),
         );
       },
     );
