@@ -22,8 +22,7 @@ class GithubApi {
         path: "https://duralga-next-vercel.vercel.app/api/auth",
         loader: (path) => Dio(baseOptions).get(path, queryParameters: {
           "key": authKey,
-          "deviceId": "qwerty",
-          // "deviceId": deviceId,
+          "deviceId": deviceId,
         }),
       );
 }

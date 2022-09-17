@@ -122,7 +122,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
       loadingBloc.add(const StopLoadingEvent());
 
-      loadSstpsFromCache(emit);
+      await loadSstpsFromCache(emit);
     });
 
     on<AppEventPing>((event, emit) async {

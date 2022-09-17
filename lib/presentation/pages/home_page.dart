@@ -160,101 +160,127 @@ class HomePage extends HookWidget {
                     }
                   }
 
-                  return Card(
-                    child: BlocBuilder<AppBloc, AppState>(
-                      buildWhen: (_, state) =>
-                          state is AppStateSstpFileChecked &&
-                          state.key == index,
-                      builder: (context, state) {
-                        bool checked = bloc.isFileSelected(file.name);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Material(
+                      elevation: 5,
+                      child: BlocBuilder<AppBloc, AppState>(
+                        buildWhen: (_, state) =>
+                            state is AppStateSstpFileChecked &&
+                            state.key == index,
+                        builder: (context, state) {
+                          bool checked = bloc.isFileSelected(file.name);
 
-                        // if (state is AppStateSstpFileChecked) {
-                        //   checked = state.value;
-                        // }
+                          // if (state is AppStateSstpFileChecked) {
+                          //   checked = state.value;
+                          // }
 
-                        return CheckboxListTile(
-                          value: checked,
-                          onChanged: (_) {
-                            bloc.add(AppEventToggleGhFile(files, index));
-                          },
-                          title: Text(file.name),
-                          secondary: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  bloc.add(
-                                    AppEventDeleteGhFile(files, index),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.delete_rounded,
-                                  color: Colors.red,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  bloc.add(
-                                    AppEventDownloadGhFile(files, index),
-                                  );
-                                },
-                                icon: icon,
-                              ),
-                            ],
-                          ),
-                          subtitle: BlocBuilder<AppBloc, AppState>(
-                            buildWhen: (_, state) =>
-                                state is AppStateUniqueProgress &&
-                                state.key == index,
-                            builder: (context, state) {
-                              double value = 0;
-                              ProgressStatus? progress;
-                              String text = "Empty";
-
-                              if (Storage()
-                                  .sstpFiles
-                                  .values
-                                  .any((e) => e.name == files[index].name)) {
-                                value = 1;
-                                text = "Done";
-                              }
-
-                              if (state is AppStateUniqueProgress) {
-                                progress = state.progress;
-
-                                if (progress.total != 0) {
-                                  value = progress.count / progress.total;
-                                }
-
-                                text = "${progress.count}/${progress.total}";
-
-                                if (progress.done) {
-                                  text = "Done";
-                                }
-                              }
-
-                              return Stack(
-                                children: [
-                                  LinearProgressIndicator(
-                                    color: Colors.green,
-                                    value: value,
-                                    minHeight: 15,
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      text,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .copyWith(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              );
+                          return CheckboxListTile(
+                            value: checked,
+                            onChanged: (_) {
+                              bloc.add(AppEventToggleGhFile(files, index));
                             },
-                          ),
-                        );
-                      },
+                            title: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                "${file.name} - ${file.sstpCount}",
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                            ),
+                            // secondary:
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                BlocBuilder<AppBloc, AppState>(
+                                  buildWhen: (_, state) =>
+                                      state is AppStateUniqueProgress &&
+                                      state.key == index,
+                                  builder: (context, state) {
+                                    double value = 0;
+                                    ProgressStatus? progress;
+                                    String text = "Empty";
+
+                                    if (Storage().sstpFiles.values.any(
+                                        (e) => e.name == files[index].name)) {
+                                      value = 1;
+                                      text = "Done";
+                                    }
+
+                                    if (state is AppStateUniqueProgress) {
+                                      progress = state.progress;
+
+                                      if (progress.total != 0) {
+                                        value = progress.count / progress.total;
+                                      }
+
+                                      text =
+                                          "${progress.count}/${progress.total}";
+
+                                      if (progress.done) {
+                                        text = "Done";
+                                      }
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4.0,
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          LinearProgressIndicator(
+                                            color: Colors.green,
+                                            value: value,
+                                            minHeight: 15,
+                                          ),
+                                          Center(
+                                            child: Text(
+                                              text,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        bloc.add(
+                                          AppEventDeleteGhFile(files, index),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete_rounded,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    IconButton(
+                                      onPressed: () {
+                                        bloc.add(
+                                          AppEventDownloadGhFile(files, index),
+                                        );
+                                      },
+                                      icon: icon,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   );
                 },
