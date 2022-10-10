@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pinging/data/storage/storage.dart';
+import 'package:pinging/data/storage/index.dart';
 import 'package:pinging/presentation/app.dart';
 import 'package:pinging/presentation/router/app_router.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -16,7 +16,7 @@ void main() async {
   //   storageDirectory: dir,
   // );
 
-  await Storage.init();
+  await initStorage();
 
   if (Platform.isAndroid) {
     // Firebase

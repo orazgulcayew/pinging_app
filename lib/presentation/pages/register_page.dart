@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:pinging/data/storage/settings.dart';
 import 'package:pinging/logic/blocs/app_bloc/app_bloc.dart';
 import 'package:pinging/presentation/pages/home_page.dart';
 
@@ -10,7 +11,7 @@ class RegisterPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<AppBloc>();
-    final authKey = bloc.authKey;
+    final authKey = Settings().authKey;
     final controller = useTextEditingController(text: authKey);
 
     useEffect(() {
@@ -18,7 +19,7 @@ class RegisterPage extends HookWidget {
         _onSubmitted(
           context: context,
           bloc: bloc,
-          value: bloc.authKey,
+          value: Settings().authKey,
         );
       }
 
@@ -80,7 +81,7 @@ class RegisterPage extends HookWidget {
     required AppBloc bloc,
     required String value,
   }) {
-    bloc.authKey = value;
+    Settings().authKey = value;
     bloc.add(AppEventAuth(value));
   }
 }
