@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pinging/data/models/file_meta.dart';
+import 'package:pinging/data/models/sstp_data.dart';
 
 class Storage {
   factory Storage() => instance;
@@ -7,21 +10,16 @@ class Storage {
   static Storage instance = Storage._constructor();
 
   Storage._constructor() {
-    settings = Hive.box("settings");
     lazyBox = Hive.lazyBox("lazyBox");
     sstpFiles = Hive.box<SstpFileMeta>("sstpFiles");
   }
 
-  late Box settings;
   late LazyBox lazyBox;
   late Box<SstpFileMeta> sstpFiles;
 
   static init() async {
-    await Hive.initFlutter();
-
     Hive.registerAdapter(SstpFileMetaAdapter());
 
-    await Hive.openBox("settings");
     await Hive.openLazyBox("lazyBox");
     await Hive.openBox<SstpFileMeta>("sstpFiles");
   }
@@ -40,4 +38,12 @@ class Storage {
       sstpFiles.add(file);
     }
   }
+
+  setWorkingSstps(List<SstpDataModel> sstps) =>
+      lazyBox.put("workingSstps", jsonEncode(sstps.map((e) => e.toMap())));
+
+  Future<List<SstpDataModel>> getWorikingSstps() async =>
+      ((await lazyBox.get("workingSstps")) as List)
+          .map<SstpDataModel>((e) => SstpDataModel.fromMap(e))
+          .toList();
 }

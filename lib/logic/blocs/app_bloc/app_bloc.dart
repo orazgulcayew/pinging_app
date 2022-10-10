@@ -9,6 +9,7 @@ import 'package:pinging/data/error/app_error.dart';
 import 'package:pinging/data/models/file_meta.dart';
 import 'package:pinging/data/models/sstp_data.dart';
 import 'package:pinging/data/repositories/github_repository.dart';
+import 'package:pinging/data/storage/settings.dart';
 import 'package:pinging/data/storage/storage.dart';
 import 'package:pinging/logic/blocs/app_error_bloc/app_error_bloc.dart';
 import 'package:pinging/logic/blocs/loading_bloc/loading_bloc.dart';
@@ -33,13 +34,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     });
 
     on<AppEventToggleGhFile>((event, emit) async {
-      final found = selectedFiles.any((e) => e == event.file.name);
+      final found = Settings().selectedFiles.any((e) => e == event.file.name);
 
       if (found) {
-        selectedFiles =
-            selectedFiles.where((e) => e != event.file.name).toList();
+        Settings().selectedFiles = Settings()
+            .selectedFiles
+            .where((e) => e != event.file.name)
+            .toList();
       } else {
-        selectedFiles = [...selectedFiles, event.file.name];
+        Settings().selectedFiles = [
+          ...Settings().selectedFiles,
+          event.file.name
+        ];
       }
 
       await loadSstpsFromCache(emit);
@@ -99,7 +105,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         for (int i = 0; i < files2.length; i++) {
           emit(AppStateSstpFileChecked(
             key: i,
-            value: selectedFiles.any((e) => e == files2[i].name),
+            value: Settings().selectedFiles.any((e) => e == files2[i].name),
           ));
         }
 
@@ -111,13 +117,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       loadingBloc.add(const StartLoadingEvent());
 
       await handleError(() async {
-        deviceId = await DeviceIdGenerator().getDeviceId(deviceId);
+        Settings().deviceId =
+            await DeviceIdGenerator().getDeviceId(Settings().deviceId);
 
         await GithubApi()
-            .auth(authKey: event.authKey, deviceId: deviceId!)
+            .auth(authKey: event.authKey, deviceId: Settings().deviceId!)
             .loader();
 
         emit(AppStateUnlock());
+
+        Storage()
+            .getWorikingSstps()
+            .then((sstps) => emit(AppStateSstps(sstps)));
       });
 
       loadingBloc.add(const StopLoadingEvent());
@@ -164,13 +175,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           emit(AppStateAppBarProgress(
             ProgressStatus(working.length, allSstps.length),
           ));
+
+          Storage().setWorkingSstps(working);
         },
       );
     });
   }
 
   loadSstpsFromCache(Emitter<AppState> emit) async {
-    final files = selectedFiles;
+    final files = Settings().selectedFiles;
 
     List<SstpDataModel> sstps = [];
 
@@ -190,42 +203,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(AppStateAppBarProgress(ProgressStatus(-1, allSstps.length)));
   }
 
-  String? get deviceId {
-    return Storage().settings.get("deviceId", defaultValue: null) as String?;
-  }
-
-  set deviceId(String? value) {
-    Storage().settings.put("deviceId", value);
-  }
-
-  String get authKey {
-    return Storage().settings.get("authKey", defaultValue: "") as String;
-  }
-
-  set authKey(String value) {
-    Storage().settings.put("authKey", value);
-  }
-
-  int get lastRequestedTime {
-    return Storage().settings.get("lastRequestedTime", defaultValue: 0) as int;
-  }
-
-  set lastRequestedTime(int value) {
-    Storage().settings.put("lastRequestedTime", value);
-  }
-
-  List<String> get selectedFiles {
-    return (Storage().settings.get("selectedFiles", defaultValue: []) as List)
-        .map<String>((e) => e)
-        .toList();
-  }
-
-  set selectedFiles(List<String> value) {
-    Storage().settings.put("selectedFiles", value);
-  }
-
   bool isFileSelected(String filename) {
-    return selectedFiles.any((e) => e == filename);
+    return Settings().selectedFiles.any((e) => e == filename);
   }
 
   FutureOr<void> handleError(FutureOr<void> Function() callback) async {
